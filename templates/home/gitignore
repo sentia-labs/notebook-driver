@@ -1,0 +1,2 @@
+# notebook-driver tool state (snapshots, run logs, status); rebuildable
+.nbd/

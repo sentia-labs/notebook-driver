@@ -1,0 +1,28 @@
+{
+  "name": "notebook-driver",
+  "version": "0.1.0",
+  "description": "Human-first paper-notebook pages in markdown, with an AI-maintained second brain vault, rituals, and a web viewer.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "nbd": "bin/nbd.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "start": "node bin/nbd.js daemon"
+  },
+  "dependencies": {
+    "@vscode/markdown-it-katex": "1.1.2",
+    "katex": "0.16.47",
+    "markdown-it": "15.0.2",
+    "markdown-it-footnote": "4.0.0",
+    "markdown-it-mark": "4.0.0",
+    "mermaid": "12.1.0",
+    "minisearch": "7.2.0",
+    "shiki": "4.5.0",
+    "yaml": "2.9.1"
+  }
+}

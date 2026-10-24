@@ -1,0 +1,42 @@
+{
+  "name": "Demo notebook",
+  "demo": {
+    "isSeed": true
+  },
+  "page": {
+    "maxLines": 28
+  },
+  "ingest": {
+    "mode": "auto",
+    "idleSeconds": 60
+  },
+  "harness": {
+    "kind": "claude",
+    "model": "sonnet"
+  },
+  "rituals": {
+    "weekly": {
+      "enabled": true,
+      "leadDays": 0,
+      "time": "16:00"
+    },
+    "monthly": {
+      "enabled": true,
+      "leadDays": 0,
+      "time": "16:00"
+    },
+    "quarterly": {
+      "enabled": true,
+      "leadDays": 2,
+      "time": "10:00"
+    },
+    "yearly": {
+      "enabled": true,
+      "leadDays": 5,
+      "time": "10:00"
+    }
+  },
+  "server": {
+    "port": 4243
+  }
+}
