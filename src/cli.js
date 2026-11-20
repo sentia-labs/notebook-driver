@@ -58,6 +58,7 @@ Running it
   demo [--reset [--fresh]] [--path]   Run the demo notebook (made from examples/demo); reset it to the seed
   service install|restart|status|…   Manage the systemd --user service (also stop, start, uninstall, print)
   hook pre-tool-use          (internal) Claude Code hook that keeps agents out of notebook/
+  hook mcp-guard <tool…>     (internal) Claude Code hook that limits MCP servers to mcp.allow
 
 Logging: every command appends to .nbd/logs/nbd.log; the daemon also logs to stderr (journald).
   -v, --verbose              Debug-level logging, echoed to stderr for any command
@@ -114,7 +115,7 @@ export async function main(argv) {
     }
     return;
   }
-  if (cmd === 'hook') return runHook(positionals[0], values);
+  if (cmd === 'hook') return runHook(positionals[0], positionals.slice(1));
   if (values.demo && !values.home) values.home = (await import('./demo.js')).demoHome();
   if (cmd === 'demo') {
     // The demo is an ordinary notebook home (made from examples/demo); everything below treats it as one.

@@ -1,5 +1,10 @@
 import { spawn, spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loggerFor } from './log.js';
+import { MCP_RULES, denyRules, guardSettings, mcpForRun } from './mcp.js';
+
+const BIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../bin/nbd.js');
 
 // Adapters for the agent harness. Claude Code is the reference harness; Codex and any other CLI
 // agent can be plugged in. Whatever the harness, the contract is the same:
@@ -28,6 +33,9 @@ export function headlessInvocation(ctx, { prompt, purpose = 'ingest', name, resu
   if (system && h.kind !== 'claude') prompt = `${system}\n\n${prompt}`;
   switch (h.kind) {
     case 'claude': {
+      // Opt-in MCP tools (mcp.allow): null leaves every MCP server and connector out.
+      const mcp = mcpForRun(config, purpose);
+      if (mcp) system = [system, MCP_RULES].filter(Boolean).join('\n\n');
       const args = [
         '-p',
         prompt,
@@ -45,12 +53,15 @@ export function headlessInvocation(ctx, { prompt, purpose = 'ingest', name, resu
         '--tools',
         [...READ_TOOLS, ...(writes ? ['Edit', 'Write'] : [])].join(','),
         '--allowedTools',
-        [...READ_TOOLS, ...(writes ? [`Edit(${abs(paths.vault)})`] : [])].join(','),
+        [...READ_TOOLS, ...(writes ? [`Edit(${abs(paths.vault)})`] : []), ...(mcp ? mcp.allow : [])].join(','),
         '--disallowedTools',
-        ['Bash', 'WebFetch', 'WebSearch', 'Agent', `Edit(${abs(paths.notebook)})`, 'mcp__*'].join(','),
-        // No MCP servers or claude.ai connectors (mail, calendar, drive) in background runs.
-        '--strict-mcp-config',
+        // A deny rule wins over an allow rule, so with mcp.allow only unwanted servers are denied.
+        ['Bash', 'WebFetch', 'WebSearch', 'Agent', `Edit(${abs(paths.notebook)})`, ...(mcp ? denyRules(paths, mcp) : ['mcp__*'])].join(','),
       ];
+      // No MCP servers or claude.ai connectors (mail, calendar, drive) in background runs, unless
+      // mcp.allow names tools; then a hook keeps their servers to exactly those tools.
+      if (mcp) args.push('--settings', guardSettings(BIN, mcp.allow));
+      else args.push('--strict-mcp-config');
       if (h.model) args.push('--model', h.model);
       if (name) args.push('--name', name);
       if (resume) args.push('--resume', resume);

@@ -49,6 +49,15 @@ export const DEFAULTS = {
     // runs so they use your Claude subscription login instead.
     stripApiKey: false,
   },
+  mcp: {
+    // claude only, off by default: extra MCP tools (e.g. read-only claude.ai connector tools) for
+    // background runs. Run types that get them: ask | ingest.
+    purposes: ['ask'],
+    // Exact tool names only (mcp__<server>__<tool>); no whole server, no wildcard. Empty = no MCP.
+    allow: [],
+    // More tools or servers to deny (and so hide from the model).
+    hide: [],
+  },
   rituals: {
     // A review becomes available `leadDays` before the period ends, at `time` (local).
     weekly: { enabled: true, leadDays: 0, time: '16:00' },
