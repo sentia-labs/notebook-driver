@@ -6,6 +6,7 @@ import { State } from './state.js';
 import { pidAlive } from './util.js';
 import { logFile } from './log.js';
 import { editorCommand } from './editor.js';
+import { refreshServerCache, serverOf, validateMcp } from './mcp.js';
 
 const run = promisify(execFile);
 
@@ -65,6 +66,7 @@ export async function doctorChecks(ctx) {
     else fail('custom harness command not found', 'check harness.command in nbd.json');
   }
   if (config.harness.model) ok(`background model: ${config.harness.model}`);
+  if (kind === 'claude' && config.mcp?.allow?.length) await mcpChecks(ctx, { ok, warn, fail });
 
   if (config.notify.enabled) {
     if (config.notify.command) ok(`notifications via ${config.notify.command[0]}`);
@@ -90,6 +92,31 @@ export async function doctorChecks(ctx) {
   const unit = path.join(process.env.HOME ?? '', '.config/systemd/user/notebook-driver.service');
   if (fs.existsSync(unit)) ok(`systemd unit ${unit}`);
   return checks;
+}
+
+/** mcp.allow: cache `claude mcp list` (runs use it to deny unused servers), then each tool's server. */
+async function mcpChecks({ paths, config }, { ok, warn, fail }) {
+  try {
+    validateMcp(config.mcp);
+  } catch (err) {
+    fail(err.message, 'fix "mcp" in nbd.json');
+    return;
+  }
+  let cache;
+  try {
+    cache = await refreshServerCache(paths);
+  } catch (err) {
+    warn(`could not list MCP servers (${err.message.split('\n')[0]}): runs load every server`, 'run `claude mcp list` in the home to see why');
+    return;
+  }
+  const purposes = config.mcp.purposes?.length ? config.mcp.purposes.join(', ') : 'no run types';
+  ok(`MCP tools for ${purposes} runs; ${cache.servers.length} server(s) cached; servers with no allowed tool are hidden`);
+  for (const tool of config.mcp.allow) {
+    const s = cache.servers.find((x) => x.id === serverOf(tool));
+    if (!s) warn(`${tool}: no server "${serverOf(tool)}" in \`claude mcp list\``, 'connect it in Claude Code (claude.ai connectors: Settings → Connectors), or fix the name');
+    else if (!s.connected) warn(`${tool}: server "${s.name}" is not connected (${s.status})`, 'run `claude` and /mcp to connect or log in');
+    else ok(`${tool}: server "${s.name}" is connected`);
+  }
 }
 
 /** Count ERROR and WARN entries from the last day, reading only the end of the log. */

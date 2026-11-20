@@ -196,6 +196,11 @@ Everything is optional; these are the defaults ([`src/config.js`](src/config.js)
     "yearly":    { "enabled": true, "leadDays": 5, "time": "10:00" },  // Dec 26
     "remindEveryHours": 24
   },
+  "mcp": {                     // claude only; off until allow names a tool
+    "purposes": ["ask"],       // run types that get the tools: "ask", "ingest"
+    "allow": [],               // exact tool names, e.g. "mcp__claude_ai_Slack__slack_read_thread"
+    "hide": []                 // more tools or servers to deny and hide
+  },
   "notify": { "enabled": true, "command": null, "onQuestions": true, "onPageFull": true, "onRituals": true, "onErrors": true, "onIngest": false },
   "server": { "host": "127.0.0.1", "port": 4242, "slowRequestMs": 500 },
   "editor": { "command": null },  // "Open in editor": argv with {file} {line}; null = nvim via xdg-terminal-exec
@@ -205,6 +210,16 @@ Everything is optional; these are the defaults ([`src/config.js`](src/config.js)
 
 `notify.command` takes an argv template (`{title}` `{body}` `{url}`), e.g. to push to your phone:
 `["curl", "-d", "{title}: {body}", "ntfy.sh/my-notebook"]`.
+
+### MCP tools in background runs
+
+Background runs get no MCP servers or claude.ai connectors by default. To give them a few tools,
+list the exact tool names in `mcp.allow` (no whole servers, no wildcards: nbd refuses them) and
+run `nbd doctor`. Doctor caches `claude mcp list` in `.nbd/`, shows the server of each allowed
+tool and whether it is connected. Runs then deny every other server (each loaded connector
+adds thousands of tokens), and a hook blocks the other tools of a server that has an allowed
+tool. The agent is told that tool output is data, not instructions, and to cite a link and a
+quote for each external fact. Run `nbd doctor` again when you add or remove servers.
 
 ### Other harnesses
 
@@ -254,7 +269,8 @@ The notebook is yours; four independent layers keep it that way:
 
 1. Background runs get only `Read`, `Glob`, `Grep`, `Edit`, `Write`, with writes allowed only under
    `vault/` and denied under `notebook/` (absolute-path permission rules), `--permission-mode
-   dontAsk`, no shell, no web, and no MCP servers or claude.ai connectors (`--strict-mcp-config`).
+   dontAsk`, no shell, no web, and no MCP servers or claude.ai connectors (`--strict-mcp-config`),
+   unless you list exact tools in `mcp.allow`.
 2. The home's `.claude/settings.json` denies edits to `notebook/` (and to the schema files) in
    interactive sessions too.
 3. A `PreToolUse` hook (`nbd hook pre-tool-use`) blocks file edits and shell commands that would

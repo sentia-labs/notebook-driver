@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CONFIG_FILE, homePaths, resolveHome } from './config.js';
 import { createLogger, logFile } from './log.js';
+import { checkMcpCall } from './mcp.js';
 
 // Claude Code PreToolUse hook: the notebook is the human's, so no agent tool call may write there.
 // Permission rules in .claude/settings.json already deny Edit/Write under notebook/; this hook is
@@ -43,8 +44,10 @@ export function checkToolCall(input, home) {
 
 // Claude Code treats exit code 2 as "block" (stderr goes back to the model); any other failure
 // would let the tool run, so every error path exits 2: when in doubt, the notebook stays untouched.
-export async function runHook(name) {
-  if (name !== 'pre-tool-use') throw new Error('Usage: nbd hook pre-tool-use  (reads the Claude Code hook payload on stdin)');
+// `mcp-guard <tool…>`: headless runs with mcp.allow add it for mcp__.* (see mcp.js), with the
+// allowed tool names as arguments.
+export async function runHook(name, allow = []) {
+  if (name !== 'pre-tool-use' && name !== 'mcp-guard') throw new Error('Usage: nbd hook pre-tool-use  (reads the Claude Code hook payload on stdin)');
   const block = (why) => {
     process.stderr.write(`${why}\n`);
     process.exit(2);
@@ -54,6 +57,11 @@ export async function runHook(name) {
     input = JSON.parse(fs.readFileSync(0, 'utf8'));
   } catch {
     block('notebook guard: could not read the hook payload, so the call is blocked to be safe.');
+  }
+  if (name === 'mcp-guard') {
+    const reason = checkMcpCall(input.tool_name, allow);
+    if (reason) block(reason);
+    return;
   }
   try {
     // The session's project is the notebook home; $NBD_HOME may point at a different one.
