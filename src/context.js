@@ -47,10 +47,6 @@ export function buildRitualContext(ctx, library, kind, period, now = new Date())
   const periodTasks = entries.filter((e) => e.kind === 'task');
   const byState = (states) => periodTasks.filter((t) => states.includes(t.state));
   const events = entries.filter((e) => e.kind === 'event');
-  const moods = entries.filter((e) => e.kind === 'mood');
-  const sparks = entries.filter((e) => e.signifiers?.some((s) => s === 'inspiration' || s === 'explore' || s === 'expand'));
-  // The most recent page titled "Intentions" (Bullet Journal 3.0), as the human wrote it.
-  const intentions = [...parsed].reverse().find(({ doc }) => /^intentions\b/i.test(doc.title));
   const openAll = tasks
     .filter(isOpen)
     .map((t) => ({ ...t, age: taskAgeDays(t, now) }))
@@ -82,14 +78,6 @@ export function buildRitualContext(ctx, library, kind, period, now = new Date())
   L.push(`${periodLabel(kind, period)} · ${from} → ${to}. Generated ${localIso(now)} by \`nbd\` straight from the notebook (no AI).`);
   L.push(`Review note to write: \`${periodNoteRel(kind, period)}\` · previous: \`${periodNoteRel(kind, prev)}\`${reviewDone(paths, kind, prev) ? ' (done)' : ' (not done)'}`);
   L.push('');
-  L.push('## Intentions');
-  if (intentions) {
-    L.push(`From [[${intentions.doc.name}]]:`);
-    L.push(...intentions.doc.text.trim().split('\n').slice(1).filter((l) => l.trim()));
-  } else {
-    L.push('- (no `# Intentions` page yet — see overview.md, or invite the human to write one)');
-  }
-  L.push('');
   L.push(`## Pages written in this period (${pages.length})`);
   for (const { doc, dates } of pages) {
     L.push(`- [[${doc.name}]] ${doc.title} — ${dates.from}${dates.to !== dates.from ? ` → ${dates.to}` : ''} · ${doc.lines}/${config.page.maxLines} lines`);
@@ -111,14 +99,6 @@ export function buildRitualContext(ctx, library, kind, period, now = new Date())
   for (const e of events) L.push(`- o ${sig(e)}${e.text} — ${ref(e)}${e.date ? ` · ${e.date}` : ''}`);
   if (!events.length) L.push('- (none)');
   L.push('');
-  L.push(`## Moods (${moods.length})`);
-  for (const e of moods) L.push(`- = ${e.text} — ${ref(e)}${e.date ? ` · ${e.date}` : ''}`);
-  if (!moods.length) L.push('- (none)');
-  L.push('');
-  L.push(`## Inspiration (!), to explore (?), to expand (+) (${sparks.length})`);
-  for (const e of sparks) L.push(`- ${sig(e)}${e.text} — ${ref(e)}`);
-  if (!sparks.length) L.push('- (none)');
-  L.push('');
   L.push(`## Every open task in the notebook, oldest first (${openAll.length}) — migration candidates`);
   for (const t of openAll.slice(0, 80)) {
     L.push(`- ${GLYPH[t.state]} ${sig(t)}${t.text} — ${ref(t)}${t.age != null ? ` · ${t.age} days` : ''}`);
@@ -130,6 +110,17 @@ export function buildRitualContext(ctx, library, kind, period, now = new Date())
   for (const e of ahead) L.push(`- ${e.kind === 'event' ? 'o' : GLYPH[e.state] ?? '-'} ${e.text} — ${ref(e)} · ${e.date ?? e.month}`);
   if (!ahead.length) L.push('- (none)');
   L.push('');
+  if (kind !== 'weekly') {
+    // Project frontmatter, so the agent can propose keep / hold / archive without opening every note.
+    const projects = library.notes().filter((n) => n.type === 'project' && n.frontmatter.status !== 'archived');
+    L.push(`## Projects (${projects.length})`);
+    for (const n of projects) {
+      const { status, updated, deadline } = n.frontmatter;
+      L.push(`- [[${n.name}]] ${n.title} · ${status ?? 'no status'} · updated ${updated ?? '?'}${deadline ? ` · deadline ${deadline}` : ''}`);
+    }
+    if (!projects.length) L.push('- (none)');
+    L.push('');
+  }
   L.push(`## Questions still waiting on the human (${questions.length})`);
   for (const q of questions) L.push(`- ${q.id}: ${q.title} → ${q.rel}`);
   if (!questions.length) L.push('- (none)');

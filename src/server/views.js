@@ -381,16 +381,26 @@ ${groups.map(
 <p class="muted small">As of ${now.toLocaleString()}.</p>`;
 }
 
-export function ritualsMain({ rituals, history, cmd, agentOn = false, open = [] }) {
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : Math.round(((s[s.length / 2 - 1] + s[s.length / 2]) / 2) * 10) / 10) : null;
+};
+
+export function ritualsMain({ rituals, history, runs = [], cmd, agentOn = false, open = [] }) {
   const convFor = (r) => open.find((c) => c.meta?.ritual === r.kind && c.meta?.period === r.period);
+  const timing = (kind) => {
+    const done = runs.filter((x) => x.kind === kind && x.done);
+    return done.length ? html`<p class="small muted">Median ${median(done.map((x) => x.activeMinutes))} min over ${done.length} finished review${done.length === 1 ? '' : 's'} · target 5</p>` : '';
+  };
   return html`
-<div class="list-head"><h1>Rituals</h1><p class="muted">Reviews are conversations: the agent prepares and guides, you reflect and write by hand. Run one here or in a terminal; it counts as done when the periodic note says <code>review: done</code>.</p></div>
+<div class="list-head"><h1>Rituals</h1><p class="muted">Five-minute reviews: the agent proposes a migration, you correct it and write it by hand. Run one here or in a terminal; it counts as done when the periodic note says <code>review: done</code>.</p></div>
 <div class="ritual-grid">
 ${rituals.map((r) => {
   const conv = convFor(r);
   return html`<article class="ritual ${r.due ? 'due' : r.done ? 'done' : ''}">
   <header><h2>${r.title}</h2><span class="chip ${r.due ? 'warn' : 'ok'}">${r.due ? 'due' : r.done ? 'done' : r.active ? 'upcoming' : 'nothing to review'}</span></header>
   <p class="r-period">${r.label}</p>
+  ${timing(r.kind)}
   ${!r.due && !r.done && r.upcoming ? html`<p class="small muted">Next: ${r.upcoming.label} — opens ${new Date(r.upcoming.availableAt).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>` : ''}
   ${conv
     ? html`<div class="op"><a class="button primary" href="/c/${conv.id}">Continue the review</a></div>`
@@ -399,6 +409,11 @@ ${rituals.map((r) => {
 </article>`;
 })}
 </div>
+${runs.length ? html`<section class="panel-section"><h2>Timings</h2><p class="small muted">Measured by nbd. Active time leaves out pauses over 15 minutes; a terminal run only has the wall clock.</p>
+<div class="op"><span class="op-label">From a terminal</span>${cli(cmd.ritualRuns())}</div>
+<div class="md"><div class="table-wrap"><table><thead><tr><th>Started</th><th>Review</th><th>Via</th><th>Active min</th><th>Agent</th><th>You</th><th>Replies</th><th>Cost</th><th>Done</th></tr></thead><tbody>
+${runs.slice(0, 50).map((x) => html`<tr><td>${new Date(x.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</td><td>${x.kind} ${x.period}</td><td>${x.via}</td><td>${x.activeMinutes}</td><td>${x.agentMinutes ?? '–'}</td><td>${x.yourMinutes ?? '–'}</td><td>${x.replies ?? '–'}</td><td>${x.costUsd != null ? `$${x.costUsd.toFixed(2)}` : '–'}</td><td>${x.done ? '✓' : ''}</td></tr>`)}
+</tbody></table></div></div></section>` : ''}
 ${history.length ? html`<section class="panel-section"><h2>Past reviews</h2><ul class="card-list">${history.map((h) => html`<li><a href="${h.route}">${h.title}</a><span class="chip">${h.type}</span>${h.description ? html`<p>${h.description}</p>` : ''}</li>`)}</ul></section>` : ''}`;
 }
 

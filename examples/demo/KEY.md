@@ -62,26 +62,14 @@ Rank today's actions with `(1)`, `(2)`, `(3)` after the box if you like: `- [ ] 
 
 ## Pages that come with the rituals
 
-**Intentions** — who you want to be, one to five lines, kept somewhere you'll see them:
+**Weekly log** (weekly review) — the actions you migrate into the week, written from the
+draft the review prepares:
 
 ```markdown
-# Intentions
-- Be curious with my challenges so that I learn instead of getting stuck
-- Be present at dinner so that my family gets the best of me
-```
-
-**Weekly spread** (weekly ritual) — look back, then plan only what you'll really do:
-
-```markdown
-# 2026-W43 review
-## Toward my intentions
-- shipped the export fix without overtime
-## Away
-- scrolled past 23:00 three nights
-## This week
-- [ ] (1) * Q4 numbers to Jane
+# 2026-W44
+- [ ] * Q4 numbers to Jane
 - [ ] renew passport
-- o Thu dinner with Leah — something to look forward to
+- o Thu dinner with Leah
 ```
 
 **Monthly log** (monthly ritual) — a timeline and an action plan. 31 days don't fit on a
@@ -118,4 +106,5 @@ vital? what would happen if it never got done?* Then, by hand:
 - doesn't matter → mark it `[-]`.
 
 Rewriting is the filter: if an action isn't worth writing again, it probably isn't worth doing.
-`nbd ritual weekly` / `monthly` walks you through it, but the pen is yours.
+`nbd ritual weekly` / `monthly` proposes a decision for each action and drafts the rewrite in a
+few minutes, but the pen is yours.

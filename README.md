@@ -48,12 +48,13 @@ flowchart LR
 - **The agent** runs headless (`claude -p`) when pages settle (5 idle minutes by default, sooner
   when you turn the page), with the changed pages, a diff against what it last saw, and numbered
   lines. When something is ambiguous it writes a question to `vault/inbox/` instead of guessing.
-- **Rituals** are interactive sessions following the Bullet Journal's T.A.M.E. steps (tidy,
-  acknowledge, migrate, enact) plus Building a Second Brain's reviews. `nbd ritual weekly`
-  gathers the facts from your pages (intentions, open actions oldest first, moods, events, what's
-  dated ahead), then the agent walks you through reflection and migration one question at a time
-  and tells you exactly what to rewrite — you do the writing. The review is recorded in
-  `vault/journal/weekly/2026-W43.md`.
+- **Rituals** are five-minute reviews that keep the record current and migrate open actions — no
+  reflection. `nbd ritual weekly` gathers the facts from your pages (open actions oldest first,
+  events, what's dated ahead, project status); the agent proposes a decision for every open
+  action in one list, you correct it in one reply, and it drafts the migration — the new page,
+  the marks on old pages, the Future Log additions — for you to edit and write by hand. The
+  review is recorded in `vault/journal/weekly/2026-W43.md`, and `nbd` times every run (Rituals
+  page, `nbd rituals --runs`) so slow rituals show up.
 - **The viewer** (`http://127.0.0.1:4242`) renders pages as paper with Bullet Journal glyphs, and
   vault notes with Shiki-highlighted code, Mermaid, KaTeX math, callouts, footnotes and tables.
   It has full-text search, backlinks, hover previews, "derived from this page" provenance, an
@@ -148,6 +149,7 @@ in (an answer, a question, a page topic) and a Copy button; hovering a button sh
 | **Ask** your second brain, with follow-ups (Ask) | `nbd ask "what did I decide about the roadmap?"` · `nbd ask --resume <session> "…"` |
 | **Start the review** (Rituals, Today when due) | `nbd ritual weekly --period 2026-W43` (monthly · quarterly · yearly) |
 | What the review will bring (Rituals) | `nbd ritual weekly --period 2026-W43 --context-only` |
+| How long each review took (Rituals → Timings) | `nbd rituals --runs` |
 | Vault health, **Clean up with the agent**, **Rebuild the index** (Activity) | `nbd lint` · `nbd lint --agent` · `nbd index` |
 | Live log, **Run the checks** (Activity) | `nbd logs -f` · `nbd doctor` · `nbd status` |
 | Open tasks (Tasks) | `nbd tasks` |

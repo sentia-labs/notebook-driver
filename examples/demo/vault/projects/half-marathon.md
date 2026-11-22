@@ -16,7 +16,7 @@ sources:
 ---
 # Half marathon
 
-You need to register before registration closes on Thu 2026-10-29.[^p0002] It serves your intention to be strong and healthy so you can run for decades.[^p0001]
+You need to register before registration closes on Thu 2026-10-29.[^p0002]
 
 ## Outcome
 Registered, then trained for it. The race date is not on the pages.
@@ -34,7 +34,6 @@ As of 2026-10-22: not registered yet.[^p0004] Left knee was a bit sore on 10-20;
 ## Related
 [[books-to-read]], [[2026-10]]
 
-[^p0001]: [[p0001]] · "Be strong and healthy so that I can run for decades"
 [^p0002]: [[p0002]] · "29 Th o half marathon registration closes"
 [^p0003]: [[p0003]] · "easy run 6 km, left knee a bit sore"
 [^p0003-2]: [[p0003]] · "zone 2 training: does it help knee pain"

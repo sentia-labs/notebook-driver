@@ -74,6 +74,7 @@ export function commandsFor(ctx) {
     askResume: (session, text = TEXT_SLOT) => nbd('ask', '--resume', session, text),
     resume: (session) => inHome(ctx, ['claude', '--resume', session]),
     rituals: () => nbd('rituals'),
+    ritualRuns: () => nbd('rituals', '--runs'),
     ritual: (kind, period) => nbd('ritual', kind, '--period', period),
     ritualContext: (kind, period) => nbd('ritual', kind, '--period', period, '--context-only'),
     lint: () => nbd('lint'),

@@ -56,17 +56,25 @@ How it maps here:
 | Bullets, states, signifiers | `- [ ]`, `- o`, `- =`, `- `, `[x] [/] [>] [<] [-]`, `* ! ? +` (see `KEY.md`) — plain markdown, typeable, greppable; matches the conventions of existing markdown BuJo tools |
 | Page topic / page number | first line `# …` / the file name; the viewer and nvim show "page 42" |
 | Daily log | `## 2026-10-22 Thu` headings; days flow across pages |
-| Monthly log, future log, intentions | pages written by hand during the rituals; 31 days don't fit 28 lines, so the timeline lists only days with something (or spans two pages) |
+| Monthly log, future log, weekly log | pages written by hand from the rituals' drafts; 31 days don't fit 28 lines, so the timeline lists only days with something (or spans two pages) |
 | Index | **automated**: the viewer's notebook index (collections and logs → page numbers), `vault/index.md`, backlinks, "derived from this page" |
 | Threading | `→ p57` / `[[p0057]]`, resolved by the viewer |
-| Migration | rituals present the open actions oldest first; the human marks `[>]` / `[<]` / `[-]` and rewrites by hand |
-| T.A.M.E. rituals | weekly, monthly, quarterly, yearly guided sessions; the human reflects and writes the spread; the agent records it in `vault/journal/` |
+| Migration | the agent proposes a decision for every open action and drafts the rewrite; the human corrects it, marks `[>]` / `[<]` / `[-]` and writes it by hand |
+| Rituals | weekly, monthly, quarterly, yearly reviews of five minutes or less: tidy and migrate only, no reflection; the agent records them in `vault/journal/` |
+| Intentions, T.A.M.E. *Acknowledge*, weekly spread | **not kept** (see below) |
 
-The one thing deliberately *not* automated is the writing. The 28-line limit and the rewriting in
-migration are friction on purpose. The agent removes the clerical parts of a Bullet Journal
-(indexing, threading, looking things up, remembering what's still open) and leaves the deliberate
-ones — deciding, reflecting, writing — to the human, with the vault and the rituals as the
-"system to revisit your ideas".
+The one thing deliberately *not* automated is the writing. The 28-line limit and the final
+rewrite in migration stay with the human. The agent removes the clerical parts of a Bullet
+Journal (indexing, threading, looking things up, remembering what's still open, preparing the
+migration) and leaves deciding and writing to the human, with the vault as the "system to revisit
+your ideas".
+
+**What is not kept: the Bullet Journal as a thinking method.** Bullet Journal 3.0 presents itself
+as a way to think: intentions, affect labeling, rituals that ask what moved you toward or away
+from who you want to be. This notebook has one user, who thinks without it and uses it to track
+facts and find them quickly later. Reflection in the rituals made them feel like a chore, so it
+is gone: no Intentions page, no toward/away, no wins and lessons, no goals or life inventory. The
+rituals keep the record current and migrate open actions, and nothing else.
 
 ### Building a Second Brain (Tiago Forte) — the organizing principles
 
@@ -139,21 +147,26 @@ settle together are batched into one run. Failed runs back off exponentially.
 answers wherever is handy — viewer, nvim float, CLI, a guided session, or `q7: …` on a page — and
 the next run applies the answer everywhere and marks the question resolved.
 
-**Rituals are conversations; the facts come from code.** `nbd ritual weekly` first computes the
-facts deterministically from the pages — open tasks oldest first, what was done, events, what is
-dated ahead — so the agent doesn't miss a task, then starts an interactive session with a skill
-that guides one step at a time. The agent never writes the page: it tells the human exactly what
-to rewrite or mark. A review is done when its journal note says `review: done`; that is also how
+**Rituals are five-minute conversations; the facts come from code.** `nbd ritual weekly` first
+computes the facts deterministically from the pages — open tasks oldest first, what was done,
+events, what is dated ahead, project status — so the agent doesn't miss a task and needn't read
+much. Then a skill runs a fixed protocol (AGENTS.md §5): the agent proposes a decision for every
+open action in one numbered list; the human corrects it in one reply; the agent drafts the
+migration (the new page, the marks on old pages, the Future Log additions) for the human to edit
+and write by hand. The agent never writes the page. A review is done when its journal note says `review: done`; that is also how
 the daemon knows to stop reminding.
 
-**Cadences.** Bullet Journal 3.0 has daily, weekly, monthly and chapter (yearly) rituals; BASB
-has weekly and monthly reviews and an annual one. Daily reflection stays with the human (five
-minutes with the page). Weekly and monthly follow T.A.M.E. and fold in the BASB checks (projects'
-next steps, areas, someday/maybe). Quarterly is prescribed by neither method; it is modelled on
-Ryder's mid-year ritual (check goals, reset intentions and priorities, celebrate wins and lessons)
-and Forte's past–present–future review, plus a life inventory, producing one to three focus
-outcomes with first sprints. Yearly follows Forte's ARC and the BuJo chapter ritual and ends with
-the annual migration. Reviews become available at the end of each period and are tracked by the
+**Rituals are timed.** `nbd` records every run in `.nbd/ritual-runs/` — start, end, active
+minutes (pauses over 15 minutes left out), the agent's time and the human's, replies, cost, and
+whether the review finished. The Rituals page and `nbd rituals --runs` list them with the median
+per ritual against the five-minute target, so the rituals themselves can be reviewed and changed.
+The agent never writes these records.
+
+**Cadences.** Weekly: migrate the week's open actions into a weekly log. Monthly: the same at
+month level, the next monthly log, and stale projects (keep, on hold, archive). Quarterly: every
+project's status and the Future Log for the next six months; no task migration, which the
+monthly review of the same month does. Yearly: the annual migration — open actions, collections
+and projects carried into the new year or let go, a new Future Log and January's log. Reviews become available at the end of each period and are tracked by the
 journal note, so a skipped review is visible, not nagging forever: only the latest period is due.
 
 **Harness-agnostic, Claude Code first.** The contract is `AGENTS.md` (Claude Code imports it from

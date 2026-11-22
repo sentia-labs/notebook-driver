@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { html } from './html.js';
 import * as V from './views.js';
 import { listQuestions } from '../questions.js';
-import { ritualStatus, RITUALS } from '../rituals.js';
+import { listRitualRuns, ritualStatus, RITUALS } from '../rituals.js';
 import { collectTasks, isOpen, taskAgeDays } from '../tasks.js';
 import { periodOf, periodLabel } from '../periods.js';
 import { escapeHtml, safeJoin } from '../util.js';
@@ -402,7 +402,7 @@ export function createViewer(ctx, { library, renderer, getStatus = () => null, a
       .sort((a, b) => b.mtime - a.mtime)
       .slice(0, 20);
     const open = api.conversations.list({ kind: 'ritual' }).filter((c) => !c.meta?.closed);
-    page(res, { title: 'Rituals', active: 'rituals', main: V.ritualsMain({ rituals: rituals(), history, cmd, agentOn: Boolean(agent), open }) });
+    page(res, { title: 'Rituals', active: 'rituals', main: V.ritualsMain({ rituals: rituals(), history, runs: listRitualRuns(paths), cmd, agentOn: Boolean(agent), open }) });
   }
 
   async function ritualContextRoute(res, kind, period) {
