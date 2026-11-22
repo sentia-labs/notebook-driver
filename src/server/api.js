@@ -2,7 +2,7 @@ import { createNextPage, listPages } from '../pages.js';
 import { State } from '../state.js';
 import { runIngest, pendingPages, skipPages } from '../ingest.js';
 import { recordAnswer, dismissQuestion } from '../questions.js';
-import { RITUALS, ritualStatus } from '../rituals.js';
+import { RITUALS, conversationRun, ritualStatus, saveRitualRun } from '../rituals.js';
 import { periodRange } from '../periods.js';
 import { writeRitualContext } from '../context.js';
 import { lintVault, writeLintReport } from '../lint.js';
@@ -142,6 +142,10 @@ export function createApi(ctx, { library, jobs, agent, daemon = null, changed, l
           children.add(child);
           child.once('close', () => children.delete(child));
         },
+      })
+      .then((turn) => {
+        if (conv.kind === 'ritual') saveRitualRun(paths, conversationRun(paths, conv));
+        return turn;
       })
       .then((turn) => job.finish({ ok: turn.ok, text: turn.ok ? turn.text.split('\n').find((l) => l.trim())?.slice(0, 200) ?? '' : '', error: turn.ok ? null : turn.text, costUsd: turn.costUsd }))
       .catch((err) => {

@@ -1,6 +1,6 @@
 ---
 name: nbd-quarterly-review
-description: Guide the human through a quarterly review (themes of the quarter, goals and intentions check, life inventory, one to three focus outcomes and sprints for the next quarter) and record it in the vault. Use when the human runs `nbd ritual quarterly` or asks for a quarterly review.
+description: Run the five-minute quarterly review - propose a status for every project, let the human correct it in one reply, draft the Future Log for the next six months for them to write by hand - and record it in the vault. Use when the human runs `nbd ritual quarterly` or asks for a quarterly review.
 argument-hint: "[quarter e.g. 2026-Q4] [context file]"
 disable-model-invocation: true
 ---
@@ -10,68 +10,42 @@ disable-model-invocation: true
 Arguments: `$ARGUMENTS` — the quarter (`2026-Q4`) and the context file `nbd` prepared. Without
 them, review the quarter that is ending.
 
-Neither the Bullet Journal nor Building a Second Brain prescribes a quarterly ritual. This one is
-modelled on Ryder Carroll's mid-year ritual (an augmented monthly: check goals, reset intentions,
-reset priorities, celebrate wins and lessons) and Tiago Forte's past–present–future review, at a
-three-month horizon. About 45 minutes; one question at a time; the human answers first.
+Follow the ritual protocol in AGENTS.md §5: five minutes, no reflection, propose → correct →
+draft → close. You never write on the pages. Open actions are not migrated here: the monthly
+review at the end of the same month does that. If it is still due, suggest running it first.
 
 ## 0. Prepare (silently)
 
-Read the context file, `vault/overview.md`, the quarter's monthly notes and the weekly
-toward/away lists, last quarter's note, and every project and area note. Create or update
-`vault/journal/quarterly/<quarter>.md` (`type: quarterly`, `period`, `period_start`, `period_end`,
-`review: pending`, `sources`; quote text values) with:
+Read the context file and `vault/journal/future-log.md`. Create or update
+`vault/journal/quarterly/<quarter>.md` (`type: quarterly`, `period`, `period_start`,
+`period_end`, `review: pending`, `sources`; quote text values) with:
 
-- **The quarter** — month by month, 2–3 cited highlights each.
+- **The quarter** — month by month, 1–3 cited highlights each.
 - **Numbers** — pages written; actions done, migrated, struck; projects started and finished.
-- **Threads** — themes, people and topics that kept coming back, and the recurring toward/away items.
 
-If the month also ended, suggest running the monthly ritual first.
+## 1. Propose — your first message
 
-## 1. Look back
+- **The quarter**, three lines at most.
+- **Projects**, numbered, every one in the context file: propose **keep**, **on hold** or
+  **archive**, with a reason (done, deadline passed, not updated since …), and a deadline fix
+  where the pages show a new date.
+- **Future Log**: what is dated in the next six months and not yet on a Future Log page.
+- **Inbox**: each open question in one line, with the answer you suggest.
 
-Show **The quarter** briefly. Ask, one at a time: which wins deserve celebrating? What lessons?
-What surprised you? Then share the threads you noticed and ask which ring true.
+End with: "Reply with the numbers to change, or `ok`."
 
-## 2. Goals and intentions
+## 2. Draft — your second message
 
-For each goal (from `overview.md` and the pages): does it still matter? Given what you've learned,
-what should change? Then the intentions: still the right ones for the season ahead? How do you
-want to be — act, think, feel — over the next three months?
+1. The Future Log additions for the next six months, grouped by month, ready for the current
+   Future Log page or a fresh one (`:NotebookNew Future Log`). 28 lines at most per page.
+2. The marks on old pages, if any (`[<]` for items now on the Future Log).
 
-## 3. Life inventory
+Make the project changes they accepted (archive: move to `vault/archive/`, `status: archived`).
+Record the inbox answers they accepted. End with: "Edit it as you like, write it, then reply
+`written`."
 
-Briefly, area by area — their PARA areas, or work, friends & family, physical health, mental
-health, daily upkeep, self-development: how is it, honestly, in a sentence? Which one deserves
-the focus of the next three months?
+## 3. Close
 
-## 4. Enact
-
-- One to three outcomes that would make next quarter a success, each with a rough deadline; offer
-  to create or update the project notes.
-- For each, the first sprint: one or two weeks, clear actions, the time estimate tripled.
-- What will you stop, decline or postpone to make room?
-- Ideas worth a small experiment: "I will [action] for [duration]".
-- Extend the Future Log so it covers the next six months.
-
-## 5. By hand
-
-Suggest a short page (≤ 10 lines):
-
-```markdown
-# 2027-Q1 focus
-- [ ] * ship newsletter issue 1 by Feb 15
-- [ ] run 3x/week, knee pain-free
-- = want to feel: steady, not rushed
-- stop: weekend email
-```
-
-Wait until it's written; read it.
-
-## 6. Close
-
-Finish the quarterly note: **Wins and lessons**, **Goals and intentions**, **Life inventory**,
-**Focus next quarter** (cited to their page), **Stop**. Set `review: done`, `reviewed`,
-`description`. Create or update the projects they committed to, archive what they agreed to end,
-and rewrite the focus and intentions sections of `overview.md`. Append
-`## [YYYY-MM-DD HH:MM] review | quarterly <quarter>` to `vault/log.md`.
+Read what they wrote. Finish the quarterly note: **Projects** (decisions) and **Future Log**
+(cited to the page). Set `review: done`, `reviewed`, `description`. Update `overview.md` if a
+project changed status. Append the log entry. One closing line.

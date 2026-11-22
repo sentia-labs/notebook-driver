@@ -7,7 +7,7 @@ import { splitFrontmatter } from '../src/frontmatter.js';
 import { lintVault } from '../src/lint.js';
 import { buildIndex, writeIndex } from '../src/vaultindex.js';
 import { checkToolCall } from '../src/hook.js';
-import { ritualStatus } from '../src/rituals.js';
+import { conversationRun, listRitualRuns, ritualStatus, saveRitualRun, terminalRun } from '../src/rituals.js';
 import { collectTasks, isOpen } from '../src/tasks.js';
 import { buildRitualContext } from '../src/context.js';
 import { notebookIndex, pageRanges } from '../src/nbindex.js';
@@ -191,11 +191,45 @@ test('tasks and ritual context come straight from the pages', (t) => {
   assert.match(text, /- \[ \] \* call Mom re: Thanksgiving — \[\[p0002\]\]:3 · 2026-10-22/);
   assert.match(text, /## Events \(2\)/);
   assert.match(text, /q0001: Who is "J." on p.2\?/);
+  assert.doesNotMatch(text, /Intentions|Moods|## Projects/);
+  const monthly = buildRitualContext(h.ctx, lib, 'monthly', '2026-10', new Date(2026, 9, 31, 17));
+  assert.match(monthly, /## Projects \(1\)\n- \[\[q4-budget\]\] Q4 budget · active · updated \?/);
+});
+
+test('ritual runs are timed: active time leaves out long pauses', (t) => {
+  const h = fixture();
+  t.after(h.cleanup);
+  const at = (min) => new Date(Date.UTC(2026, 9, 25, 16, min)).toISOString();
+  const conv = {
+    id: 'cabc123',
+    createdAt: at(0),
+    costUsd: 0.2,
+    meta: { ritual: 'weekly', period: '2026-W43' },
+    turns: [
+      { role: 'human', at: at(0) },
+      { role: 'agent', at: at(1), ms: 60_000 },
+      { role: 'human', at: at(3) }, // 2 min to reply
+      { role: 'agent', at: at(4), ms: 60_000 },
+      { role: 'human', at: at(50) }, // came back 46 min later: not active
+      { role: 'agent', at: at(51), ms: 60_000 },
+    ],
+  };
+  const run = conversationRun(h.paths, conv);
+  assert.deepEqual(
+    { minutes: run.minutes, activeMinutes: run.activeMinutes, agentMinutes: run.agentMinutes, yourMinutes: run.yourMinutes, replies: run.replies, done: run.done },
+    { minutes: 51, activeMinutes: 5, agentMinutes: 3, yourMinutes: 2, replies: 2, done: false },
+  );
+  saveRitualRun(h.paths, run);
+  h.write('vault/journal/weekly/2026-W43.md', '---\ntype: weekly\nreview: done\n---\n# W43\n');
+  saveRitualRun(h.paths, terminalRun(h.paths, 'weekly', '2026-W43', new Date(Date.UTC(2026, 9, 26, 9)), new Date(Date.UTC(2026, 9, 26, 9, 4, 30))));
+  saveRitualRun(h.paths, { ...run, done: true }); // a later turn updates the same run
+  const runs = listRitualRuns(h.paths);
+  assert.deepEqual(runs.map((r) => [r.via, r.activeMinutes, r.done]), [['terminal', 4.5, true], ['viewer', 5, true]]);
 });
 
 test('the notebook index groups collections and logs by page, Bullet Journal style', (t) => {
   const h = tempHome({
-    'notebook/p0001.md': '# Intentions\n- Be curious\n',
+    'notebook/p0001.md': '# Index\n- Books to read → 6\n',
     'notebook/p0002.md': '# Future Log\n## 2026-12\n- [ ] 09: deadline\n',
     'notebook/p0003.md': '# 2026-10\n- 03 Sa o dinner\n',
     'notebook/p0004.md': '# 2026-10-20 Tue\n- [ ] a\n',
@@ -208,7 +242,7 @@ test('the notebook index groups collections and logs by page, Bullet Journal sty
   const idx = notebookIndex(new Library(h.paths, h.config).scan().parsedPages());
   const flat = Object.fromEntries(idx.flatMap((g) => g.entries.map((e) => [`${g.section}/${e.label}`, pageRanges(e.pages)])));
   assert.deepEqual(flat, {
-    '/Intentions': '1',
+    '/Index': '1',
     '/Future Log': '2',
     'Monthly logs/October 2026': '3',
     'Collections/Books to read': '6, 8',

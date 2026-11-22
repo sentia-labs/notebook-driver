@@ -8,7 +8,7 @@ import { Library } from './library.js';
 import { State } from './state.js';
 import { pendingPages, runIngest, skipPages } from './ingest.js';
 import { listQuestions, recordAnswer, dismissQuestion, readQuestion } from './questions.js';
-import { ritualStatus, RITUALS } from './rituals.js';
+import { listRitualRuns, ritualStatus, RITUALS, saveRitualRun, terminalRun } from './rituals.js';
 import { collectTasks, isOpen, taskAgeDays } from './tasks.js';
 import { writeRitualContext } from './context.js';
 import { headlessInvocation, interactiveInvocation, launchInteractive, runHeadless } from './harness.js';
@@ -46,6 +46,7 @@ Second brain (the agent's)
 
 Rituals
   rituals [--json]           What's due: weekly / monthly / quarterly / yearly
+  rituals --runs [--json]    How long each review took (active minutes, agent vs you, done or not)
   ritual <kind> [--period P] [--context-only]   Start a guided review (P like 2026-W43, 2026-10, 2026-Q4, 2026)
 
 Running it
@@ -86,6 +87,7 @@ export async function main(argv) {
       page: { type: 'string', multiple: true },
       period: { type: 'string' },
       'context-only': { type: 'boolean' },
+      runs: { type: 'boolean' },
       agent: { type: 'boolean' },
       'no-agent': { type: 'boolean' },
       'no-serve': { type: 'boolean' },
@@ -262,6 +264,16 @@ export async function main(argv) {
       return out(`${positionals[0]} dismissed.`);
     }
     case 'rituals': {
+      if (values.runs) {
+        const runs = listRitualRuns(paths);
+        if (values.json) return out(runs);
+        if (!runs.length) return out('No timed reviews yet.');
+        for (const r of runs) {
+          const split = r.agentMinutes != null ? `  agent ${r.agentMinutes} · you ${r.yourMinutes}` : '';
+          console.log(`${r.startedAt.slice(0, 10)}  ${r.kind.padEnd(9)} ${r.period.padEnd(9)} ${r.via.padEnd(8)} ${String(r.activeMinutes).padStart(5)} min${split}${r.done ? '' : '  (not done)'}`);
+        }
+        return;
+      }
       const lib = new Library(paths, config).scan();
       const rs = ritualsWithActivity(ctx, lib);
       if (values.json) return out(rs);
@@ -281,7 +293,10 @@ export async function main(argv) {
       if (values['context-only']) return out(c.text);
       console.log(`${RITUALS[kind].title} · ${period} — context: ${c.rel}\n`);
       const inv = interactiveInvocation(ctx, { skill: RITUALS[kind].skill, args: `${period} ${c.rel}` });
+      const started = new Date();
       process.exitCode = launchInteractive(inv);
+      const run = saveRitualRun(paths, terminalRun(paths, kind, period, started, new Date()));
+      console.log(`\n${RITUALS[kind].title} · ${period}: ${run.minutes} min${run.done ? '' : ' (not done)'}`);
       return;
     }
     case 'ask': {

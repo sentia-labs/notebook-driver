@@ -41,7 +41,8 @@ Each check names the button, the command that does the same, and what to expect.
 | --- | --- | --- |
 | Answer a question in **Inbox** | `nbd answer q0001 "Jordan Lee" --demo` | ~60 s later the question is resolved and a person note exists |
 | **Ask** "What's still open on the auth migration?" | `nbd ask "…" --demo` | Steps live, an answer citing `p.3`/`p.4`/`p.6`; follow-ups continue the session (`nbd ask --resume <session> "…" --demo`) |
-| **Rituals → Start the review** (weekly) | `nbd ritual weekly --period 2026-W43 --demo` | The agent writes `vault/journal/weekly/2026-W43.md` (`review: pending`), shows the week, asks one question; replies continue it; *From a terminal* gives `claude --resume …` |
+| **Rituals → Start the review** (weekly) | `nbd ritual weekly --period 2026-W43 --demo` | The agent writes `vault/journal/weekly/2026-W43.md` (`review: pending`) and shows one numbered list of proposals for the open actions; reply `ok` and it drafts the `# 2026-W44` page and the marks on old pages in code blocks; no reflective questions; *From a terminal* gives `claude --resume …` |
+| **Rituals → Timings** after a review turn | `nbd rituals --runs --demo` | One row for the run: active minutes, agent and your minutes, replies, cost, done |
 | **Activity → Clean up with the agent** | `nbd lint --agent --demo` | A conversation that works through lint findings with you |
 
 ## Safety and operations
